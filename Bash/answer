@@ -1,0 +1,17 @@
+#
+termidesk-vdi        termidesk-vdi/yes     boolean false
+# Пользовательская лицензия
+termidesk-vdi       termidesk-vdi/text-eula note
+# Вы принимаете условия пользовательской лицензии?
+termidesk-vdi       termidesk-vdi/yes-eula        boolean true
+# true -  интерактивный режим. false - пакетный (тихий) режим:
+termidesk-vdi       termidesk-vdi/false       boolean true
+# ПАРАМЕТРЫ ПОДКЛЮЧЕНИЯ К СУБД
+# Адрес сервера СУБД Termidesk:
+termidesk-vdi       termidesk-vdi/dbhost    string  127.0.0.1
+# Имя базы данных Termidesk:
+termidesk-vdi       termidesk-vdi/dbname    string  termidesk
+# Пользователь базы данных Termidesk:
+termidesk-vdi       termidesk-vdi/dbuser    string  termidesk
+# Пароль базы данных Termidesk:
+termidesk-vdi       termidesk-vdi/dbpass    string  ksedimret

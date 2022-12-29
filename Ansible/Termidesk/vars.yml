@@ -1,0 +1,31 @@
+---
+db_user: termidesk
+db_password: ksedimret
+db_name: termidesk
+db_host: 192.168.18.218
+
+
+### Install package list ###
+termidesk_pkgs:
+  - termidesk-vdi
+
+### Termidesk services
+termidesk_dispatcher_service: termidesk-vdi.service
+termidesk_taskman_service: termidesk-taskman.service
+termidesk_gateway_sevice: termidesk-wsproxy.service
+
+
+### Apache2 conf
+termidesk_apache_sevice: apache2.service
+termidesk_apache_conf: "/etc/apache2/apache2.conf"
+
+### Include Termidesk answer file ###
+termidesk_debconf_general:
+  - ["termidesk-vdi", "termidesk-vdi/yesno-eula", "boolean", "true"]
+  - ["termidesk-vdi", "termidesk-vdi/interactive", "boolean", "false"]
+
+termidesk_debconf_db:
+  - ["termidesk-vdi", "termidesk-vdi/dbhost", "string", "{{ db_host }}"]
+  - ["termidesk-vdi", "termidesk-vdi/dbname", "string", "{{ db_name }}"]
+  - ["termidesk-vdi", "termidesk-vdi/dbuser", "string", "{{ db_user }}"]
+  - ["termidesk-vdi", "termidesk-vdi/dbpass", "string", "{{ db_password }}"]
