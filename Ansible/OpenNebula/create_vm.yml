@@ -1,0 +1,6 @@
+---
+- name: Create a new instance
+  community.general.one_vm:
+    template_id: 18
+  register: result 
+  

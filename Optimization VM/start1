@@ -1,0 +1,9 @@
+#!/bin/bash
+dir=~/termidesk-optimization/src
+$dir/checksystem
+. ${d}/flydesktop
+. ${d}/logs
+. ${d}/pkgoperation
+. ${d}/services
+. ${d}/system
+. ${d}/usershome
