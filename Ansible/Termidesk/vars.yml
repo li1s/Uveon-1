@@ -10,7 +10,7 @@ termidesk_pkgs:
   - termidesk-vdi
 
 ### Termidesk services
-termidesk_dispatcher_service: termidesk-vdi.service
+termidesk_vdi_service: termidesk-vdi.service
 termidesk_taskman_service: termidesk-taskman.service
 termidesk_gateway_sevice: termidesk-wsproxy.service
 

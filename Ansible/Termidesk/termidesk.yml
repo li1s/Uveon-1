@@ -74,7 +74,7 @@
   post_tasks:
   - name: Enable and start termidesk-vdi.service
     ansible.builtin.systemd:
-      service: "{{ termidesk_dispatcher_service }}"
+      service: "{{ termidesk_vdi_service }}"
       enabled: yes
       state: started
 
