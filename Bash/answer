@@ -3,6 +3,79 @@ termidesk-vdi        termidesk-vdi/yes     boolean false
 # Пользовательская лицензия
 termidesk-vdi       termidesk-vdi/text-eula note
 # Вы принимаете условия пользовательской лицензии?
+termidesk-vdi       termidesk-vdi/yesno-eula        boolean true
+# true -  интерактивный режим. false - пакетный (тихий) режим:
+termidesk-vdi       termidesk-vdi/interactive       boolean false
+# ПАРАМЕТРЫ ПОДКЛЮЧЕНИЯ К СУБД
+# Адрес сервера СУБД Termidesk:
+termidesk-vdi       termidesk-vdi/dbhost    string  127.0.0.1
+# Имя базы данных Termidesk:
+termidesk-vdi       termidesk-vdi/dbname    string  $databasename
+# Пользователь базы данных Termidesk:
+termidesk-vdi       termidesk-vdi/dbuser    string  $databaseuser
+# Пароль базы данных Termidesk:
+termidesk-vdi       termidesk-vdi/dbpass    string  $userpassword
+
+# ПАРАМЕТРЫ ПОДКЛЮЧЕНИЯ К СЕРВЕРАМ RABBITMQ
+# RabbitMQ URL #1
+termidesk-vdi   termidesk-vdi/rabbitmq_url1     password        amqp://termidesk:termidesk@127.0.0.1:5672/termidesk
+# RabbitMQ URL #3
+termidesk-vdi   termidesk-vdi/rabbitmq_url3     password
+# RabbitMQ URL #2
+termidesk-vdi   termidesk-vdi/rabbitmq_url2     password
+# Choices: 1 amqp://termidesk:termidesk@127.0.0.1:5672/termidesk, 2 Empty, 3 Empty, Save
+termidesk-vdi   termidesk-vdi/rabbitmq_select   select  Save
+#Временные переменные для промежуточного хранения параметров подключения к серверу RabbitMQ, из которых создаются строки  termidesk-vdi/rabbitmq_url1, termidesk-vdi/rabbitmq_url2, termidesk-vdi/rabbitmq_url3
+# Termidesk RabbitMQ host
+termidesk-vdi   termidesk-vdi/rabbitmq_host     string  127.0.0.1
+# Termidesk RabbitMQ port
+termidesk-vdi   termidesk-vdi/rabbitmq_port     string  5672
+# Termidesk RabbitMQ user
+termidesk-vdi   termidesk-vdi/rabbitmq_user     string  termidesk
+# Termidesk RabbitMQ pass
+termidesk-vdi   termidesk-vdi/rabbitmq_pass     string  termidesk
+# Termidesk RabbitMQ Virtual Host
+termidesk-vdi   termidesk-vdi/rabbitmq_vhost    string  termidesk
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#
+termidesk-vdi        termidesk-vdi/yes     boolean false
+# Пользовательская лицензия
+termidesk-vdi       termidesk-vdi/text-eula note
+# Вы принимаете условия пользовательской лицензии?
 termidesk-vdi       termidesk-vdi/yes-eula        boolean true
 # true -  интерактивный режим. false - пакетный (тихий) режим:
 termidesk-vdi       termidesk-vdi/false       boolean true
