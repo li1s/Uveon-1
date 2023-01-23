@@ -4,10 +4,10 @@ import math
 
 # Create a connection to the server:
 connection = sdk.Connection(
-    url='https://tsto07-frode01.vda.lan/ovirt-engine/api',
+    url='https://tsto06-ovm.sl.loc/ovirt-engine/api',
     username='admin@internal',
-    password='12345678',
-    ca_file='/home/vda/Documents/vault13/python/oVirt/pki-resource.crt'
+    password='657frodo',
+    ca_file='/home/l1is/pki-resource'
 )
 
 vms_service = connection.system_service().vms_service()

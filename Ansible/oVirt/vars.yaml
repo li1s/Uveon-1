@@ -1,0 +1,3 @@
+ovirt_url = https://tsto06-ovm.sl.loc/ovirt-engine/api
+ca_file = /home/l1is/pki-resource
+ovirt_user = admin@internal

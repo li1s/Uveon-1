@@ -1,0 +1,49 @@
+---
+- name: Create VM on ovm.sl.loc
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  
+
+
+
+  pre_tasks:
+    - name: Login to oVirt
+      ovirt.ovirt.ovirt_auth:
+        url: https://tsto06-ovm.sl.loc/ovirt-engine/api
+        username: admin@internal
+        password: 657frodo
+        ca_file: /home/l1is/pki-resource
+        
+      tags:
+        - always
+
+  tasks:
+    - name: Create new virtal machine from template
+      ovirt.ovirt.ovirt_vm:
+        auth: "{{ ovirt_auth }}"
+        state: present
+        cluster: cluster
+        name: testvm
+        memory: 4GiB
+        cpu_cores: 2
+        cpu_sockets: 2
+        cpu_shares: 1024
+        type: desktop
+        operating_system: rhel_8x64
+        disks:
+        - name: disk0
+          bootable: True
+        nics:
+        - name: ovirtmgmt
+
+  post_tasks:
+    - name: Logout from oVirt
+      ovirt.ovirt.ovirt_auth:
+        state: absent
+        ovirt_auth: "{{ ovirt_auth }}"
+      tags:
+        - always
+
+  collections:
+    - ovirt.ovirt
