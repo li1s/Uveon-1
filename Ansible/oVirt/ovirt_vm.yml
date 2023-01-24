@@ -36,7 +36,7 @@
           bootable: True
         nics:
         - name: ovirtmgmt
-
+        wait: true
   post_tasks:
     - name: Logout from oVirt
       ovirt.ovirt.ovirt_auth:
