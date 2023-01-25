@@ -31,7 +31,7 @@ function msg_ok() {
   echo -e "${BFR} ${CM} ${GN}${msg}${CL}"
 }
 echo "============================================================================"
-echo "=====          Установка  Termidesk стандартной редакции               ====="
+echo "=====          Установка  Termidesk 4 редакции                         ====="
 echo "============================================================================"
 
 msg_info "Устанавливаем обновления используя команду apt update"
@@ -43,7 +43,7 @@ msg_info "Устанавливаем СУБД PostgreSQL командой: sudo 
 sudo apt install postgresql -y &>/dev/null
 msg_ok "СУБД PostgreSQL успешно установлена"
 
-msg_info "Создаем БД termidesk \n"
+msg_info "Создаем БД: termidesk \n"
 sudo su postgres -c "psql -c \"CREATE DATABASE termidesk LC_COLLATE 'ru_RU.utf8' LC_CTYPE 'ru_RU.utf8' TEMPLATE template0;\" &>>/dev/null"
 msg_ok "База данных: termidesk успешно создана"
 

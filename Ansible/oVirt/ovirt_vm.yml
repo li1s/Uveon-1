@@ -3,17 +3,17 @@
   hosts: localhost
   connection: local
   gather_facts: true
-  
+  vars_files: /home/l1is/Документы/Uveon-git/Uveon-1/Ansible/oVirt/vars.yaml
 
 
 
   pre_tasks:
     - name: Login to oVirt
       ovirt.ovirt.ovirt_auth:
-        url: https://tsto06-ovm.sl.loc/ovirt-engine/api
-        username: admin@internal
-        password: 657frodo
-        ca_file: /home/l1is/pki-resource
+        url: "{{ ovirt_url }}"
+        username: "{{ ovirt_user }}"
+        password: "{{ ovirt_password }}"
+        
         
       tags:
         - always
@@ -22,21 +22,19 @@
     - name: Create new virtal machine from template
       ovirt.ovirt.ovirt_vm:
         auth: "{{ ovirt_auth }}"
-        state: present
-        cluster: cluster
-        name: testvm
-        memory: 4GiB
-        cpu_cores: 2
-        cpu_sockets: 2
-        cpu_shares: 1024
-        type: desktop
-        operating_system: rhel_8x64
-        disks:
-        - name: disk0
-          bootable: True
-        nics:
-        - name: ovirtmgmt
-        wait: true
+        name: termidesk_vdi
+        template: ALCE-173-GUI
+        cluster: Default
+        state: running
+        wait: yes
+      #with_items:
+      #- tdsk-vdi2
+      #- tdsk-tsk1
+      #- tdsk-tsk2
+      #- tdsk-db
+      #- tdsk-gw1
+      #- tdsk-gw2
+  
   post_tasks:
     - name: Logout from oVirt
       ovirt.ovirt.ovirt_auth:
