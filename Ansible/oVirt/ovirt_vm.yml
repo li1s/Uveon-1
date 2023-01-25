@@ -3,38 +3,31 @@
   hosts: localhost
   connection: local
   gather_facts: true
-  vars_files: /home/l1is/Документы/Uveon-git/Uveon-1/Ansible/oVirt/vars.yaml
-
-
+  ignore_unreachable: true
+  vars_files: 
+    - /home/l1is/Документы/Uveon-git/Uveon-1/Ansible/oVirt/vars.yml
 
   pre_tasks:
     - name: Login to oVirt
       ovirt.ovirt.ovirt_auth:
-        url: "{{ ovirt_url }}"
-        username: "{{ ovirt_user }}"
-        password: "{{ ovirt_password }}"
-        
-        
+        url: "{{ url }}"
+        username: "{{ engine_user }}"
+        password: "{{ engine_password }}"
       tags:
-        - always
+      - always
 
   tasks:
-    - name: Create new virtal machine from template
+    - name: Creates VM from temp 'ALCE-173-CLI'
       ovirt.ovirt.ovirt_vm:
         auth: "{{ ovirt_auth }}"
-        name: termidesk_vdi
-        template: ALCE-173-GUI
+        name: orel2-12-postgreRaspred03
+        description: orel2-12-postgreRaspred03
+        template: ALCE-173-CLI
         cluster: Default
-        state: running
-        wait: yes
-      #with_items:
-      #- tdsk-vdi2
-      #- tdsk-tsk1
-      #- tdsk-tsk2
-      #- tdsk-db
-      #- tdsk-gw1
-      #- tdsk-gw2
-  
+        state: present
+        
+
+
   post_tasks:
     - name: Logout from oVirt
       ovirt.ovirt.ovirt_auth:
@@ -45,3 +38,4 @@
 
   collections:
     - ovirt.ovirt
+     
