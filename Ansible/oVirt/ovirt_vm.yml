@@ -3,10 +3,10 @@
   hosts: localhost
   connection: local
   gather_facts: true
-  ignore_unreachable: true
   vars_files: 
     - /home/l1is/Документы/Uveon-git/Uveon-1/Ansible/oVirt/vars.yml
-
+  #vars: 
+  #  - ansible_python_interpreter: /usr/bin/python3.10
   pre_tasks:
     - name: Login to oVirt
       ovirt.ovirt.ovirt_auth:
@@ -24,7 +24,7 @@
         description: orel2-12-postgreRaspred03
         template: ALCE-173-CLI
         cluster: Default
-        state: present
+        state: running
         
 
 

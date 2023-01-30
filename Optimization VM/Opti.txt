@@ -93,3 +93,6 @@ vm.vfs_cache_pressure = 50
 https://g-soft.info/articles/483/optimizatsiya-linux-s-pomoschyu-tuned/
 
 https://highload.today/optimizatsiya-servera-na-ubuntu/
+
+
+проверять о наличии опенмь ещщды и удалить его с информацией + такой же пакет под виртуал бокс 
