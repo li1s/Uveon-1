@@ -1,0 +1,103 @@
+#! /bin/bash
+
+#-------Find and clear log files at var dir-------
+function slog_clean {
+echo
+printf $green"Clear log files in var dir\n"$reset
+for slogfile in $(find /var/log  -maxdepth 2 ! -iname "*.gz")
+do 
+	printf $green$" Clear %s\n" "${slogfile}"$reset 
+	  if result=$(sudo truncate -s 0 $slogfile); then
+	printf $green$" File %s was cleaned OK!\n" "${slogfile}"$reset 
+                slog_clean+="1" 
+       else
+                printf $red$" Attention: file %s was not cleaned\n" "${slogfile}"$reset 
+                slog_not_clean+="0"
+       fi
+
+done
+
+if [[ ${#slog_not_clean[0]} != 0 ]]; then
+        echo
+        printf $red$" Attention: %s not be clean\n" "${#slog_not_clean}"$reset 
+        slogstat="Failed"
+else
+        echo
+        printf $green$" %s log files was cleaned OK!\n" "${#slog_clean}"$reset 
+        slogstat="Passed"
+fi
+
+
+printf $green$"Clear archive log files in var dir\n"$reset 
+for sgzlogfile in $(find /var/log  -maxdepth 2 -iname "*.gz")
+do 
+        printf $green" Clear %s\n" "${sgzlogfile}"$reset 
+         if result=$(sudo rm -f $sgzlogfile); then
+        printf $green" File %s was cleaned OK!\n" "${sgzlogfile}"$reset 
+                sgzlog_clean+="1" 
+       else
+                printf $red" Attention: file %s was not cleaned\n" "${sgzlogfile}"$reset 
+                sgzlog_not_clean+="0"
+       fi
+
+done
+
+if [[ ${#sgzlog_not_clean[0]} != 0 ]]; then
+        echo
+        printf $red" Attention: %s not be clean\n" "${#sgzlog_not_clean}"$reset 
+        sgzlogstat="Failed"
+else
+        echo
+        printf $green$" %s archive log files was cleaned OK!\n" "${#sgzlog_clean}"$reset 
+        sgzlogstat="Passed"
+
+fi
+}
+#-------Clean apt repo-------
+function aptclean {
+printf $green$"Clear local repo\n"$reset
+sudo apt-get clean
+printf $green$" Local repo was cleaned OK!\n"$reset 
+aptstat="Passed"
+}
+#-------Clear journal-------
+function purgejournal {
+printf $green$"Clear journal\n"$reset
+sudo journalctl --rotate
+sudo journalctl --vacuum-time=1s
+printf $green$" Journal was cleaned OK!\n"$reset 
+jourstat="Passed"
+}
+#-------Clear TMP dirs-------
+function tmpclean {
+printf $green$"Clear tmp dirs\n"$reset
+for srvs in "/tmp" "/var/tmp"
+do
+sudo rm -rf ${srvs}/*
+done
+printf $green$" TMP dirs was cleaned OK!\n"$reset 
+tmpstat="Passed"
+}
+
+#-------Patch power button-------
+function powerbutton {
+mkdir -p ${BACKUPDIR}/etc/acpi/events/
+sudo cp --backup=t /etc/acpi/events/powerbtn-acpi-support ${BACKUPDIR}/etc/acpi/events/powerbtn-acpi-support.backup
+printf $green$" Backingup power button files OK!\n"$reset
+printf $green$" Patching power button files...\n"$reset
+sudo sed -i 's/event.*/event=button\/power/g' /etc/acpi/events/powerbtn-acpi-support
+sudo sed -i 's/action.*/event=\/sbin\/poweroff/g' /etc/acpi/events/powerbtn-acpi-support
+printf $green$" Patching power button file OK!\n"$reset 
+pbstat="Passed"
+}
+
+#-------Install resize script-------
+function xsize {
+printf $green$" Copy resize script to /usr/local/bin/ and create udev rule!\n"$reset
+sudo cp hooks/x-resize /usr/local/bin/x-resize 
+sudo chmod +x /usr/local/bin/x-resize 
+sudo cp files/50-spice-vdagent.rules /etc/udev/rules.d/
+printf $green$" Resize script copied OK!\n"$reset       
+xszstat="Passed"
+}
+

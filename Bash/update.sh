@@ -1,6 +1,7 @@
 #!/bin/bash
 echo "================================================"
-echo "===     Обновление Termidesk For Astra       ==="
+echo "===     Обновление Termidesk c версии 3.*    ==="
+echo "===   до обьедененной редакции Termidesk 4   ==="
 echo "================================================"
 echo "===     Оcтанавливаем службы Termidesk       ==="
 sudo systemctl stop termidesk-vdi termidesk-wsproxy termidesk-taskman

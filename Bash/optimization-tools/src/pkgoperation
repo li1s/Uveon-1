@@ -1,0 +1,129 @@
+#! /bin/bash
+#
+PKGFILE="files/pkg_required.txt"
+SRVFILE="files/services.txt"
+RMPKGFILE="/files/pkg_remove.txt"
+function pkginstall {
+#-------Read PKG file-------
+for line in "$(cat $PKGFILE)"
+do
+	req_pkgs+=( $line )
+done
+
+#-------Check installed pkg-------
+for pkg in ${req_pkgs[*]}
+do
+	pkg_ok="$(dpkg-query -W --showformat='${Status}\n' $pkg  2>&1 | grep "install ok installed")"
+	if [ "" = "$pkg_ok" ]; then
+	   printf $red$" Attention: %s.......not installed\n" "$pkg"$reset
+	   pkg_no+=( $pkg )
+	else
+	   printf $green$" %s already installed.......OK!\n" "$pkg"$reset
+	fi
+done
+
+if [ ${#pkg_no[*]} != 0 ]; then
+while true; do
+    read -p $"Do you wish to install missing pakages? ([Y]/n): " yn 2>&1
+    yn=${yn:-Y}
+    case $yn in
+        [Yy]* )
+		#-------Install pakages-------
+			printf $green$" Install requirements packages\n"$reset
+			for pkg_inst in ${pkg_no[*]}
+			do
+			printf $green$" Install %s\n" "$pkg_inst"
+			if result=$(sudo apt-get install $pkg_inst 2>&1); then
+				printf $green$" Package %s was installed OK!\n" "$pkg_inst"$reset
+				pkg_install+="1" 
+			else
+				printf $red$" Attention: package %s was not installed\n" "$pkg_inst"$reset
+				pkg_not_install+="0"
+			fi
+			done; break;;
+        [Nn]* )
+		pkgstat="Failed"
+		break;;
+        * ) echo $"Please answer yes or no.";;
+    esac
+done
+else 
+echo
+printf $green$" All requirements packages installed OK!\n"$reset
+pkgstat="Passed"
+fi
+
+if [[ ${#pkg_not_install} != 0 ]]; then
+	echo
+	printf $red$" Attention: %s requirements packages not installed.\n" "${#pkg_not_install}"$reset
+	pkgstat="Failed"
+else
+	echo
+	printf $green$" %s requirements packages installed OK!\n" "${#pkg_install}"$reset
+	pkgstat="Passed"
+fi
+}
+
+
+function pkgremove {
+#-------Read Service file-------
+for line in "$(cat $RMPKGFILE)"
+do
+        rm_pkg+=( $line )
+done
+
+for rm in ${rm_pkg[*]}
+do
+ 	pkg_remove="$(dpkg-query -W --showformat='${Status}\n' $rm  2>&1 | grep "install ok installed")"
+        if [ "" = "$pkg_remove" ]; then
+           printf $green$" %s not installed.......OK!\n" "$rm"$reset
+        else
+           printf $red$" Attention: %s is installed and may remove\n" "$rm"$reset
+           rm_yes+=( $rm )
+        fi
+done
+printf $green""
+
+if [ ${#rm_yes[*]} != 0 ]; then
+while true; do
+    read -p $"Do you wish to remove %s pakages? ([Y]/n): " "${rm_yes[*]}" yn 2>&1
+    yn=${yn:-Y}
+    case $yn in
+        [Yy]* )
+                #-------Remove selected pakages-------
+                        printf $green$" Remove selected packages\n"$reset
+                        for rem in ${rm_yes[*]}
+                        do
+                        printf $green$" Remove %s\n" "$rem"
+                        if rm_result=$(sudo apt-get remove $rem 2>&1); then
+                                printf $green$" Package %s was removed OK!\n" "$rm"$reset
+                                pkg_removed+="1" 
+                        else
+                                printf $red$" Attention: package %s was not removed\n" "$rem"$reset
+                                pkg_not_removed+="0"
+                        fi
+                        done; break;;
+        [Nn]* )
+                pkgrmstat="Failed"
+                break;;
+        * ) echo "Please answer yes or no.";;
+    esac
+done
+else 
+echo
+printf $green$" All selected packages remove or not installed OK!\n"$reset
+pkgrmstat="Passed"
+fi
+
+if [[ ${#pkg_not_removed} != 0 ]]; then
+        echo
+        printf $red$" Attention: %s selected packages was not removed.\n" "${#pkg_not_removed}"$reset
+        pkgrmstat="Failed"
+else
+        echo
+        printf $green$" %s selected packages was removed OK!\n" "${#pkg_removed}"$reset
+        pkgrmstat="Passed"
+fi
+
+
+}

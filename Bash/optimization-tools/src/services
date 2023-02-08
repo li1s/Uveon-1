@@ -1,0 +1,96 @@
+#! /bin/bash
+#
+SRVFILE="files/services.txt"
+
+function services_stop {
+#-------Read Service file-------
+for line in "$(cat $SRVFILE)"
+do
+        services+=( $line )
+done
+
+for srv in ${services[*]}
+do
+if [ "$(service $srv status 2>&1 | awk '/Active/ {print $3}' | tr -d '()')" = "running" ]; then
+    printf $green$" %s service is running...\n" "$srv"$reset
+    srv_run+=( $srv )
+else
+    printf $green$" %s service not running OK!\n" "$srv"$reset
+    srv_stop+=( $srv )
+fi
+
+done
+if [ ${#srv_run[*]} != 0 ]; then
+while true; do
+    read -p $"Do you wish to stop and disable %s services? ([Y]/n): " "${srv_run[*]}" yn 2>&1
+    yn=${yn:-Y}
+    case $yn in
+        [Yy]* )
+                #-------Stop services-------
+                        printf $green$" Stop running services\n"$reset
+                        for srun in ${srv_run[*]}
+                        do
+                        printf $green$" Stop %s\n" "$srun"
+                        if result=$(sudo service $srun stop 2>&1); then
+                                printf $green$" Service %s was stoppeded OK!\n" "$srun"$reset
+				sudo systemctl disable $srun
+                                printf $green$" Service %s was disabled OK!\n" "$srun"$reset
+                                srv_stoped+="1" 
+                        else
+                                printf $red$" Attention: service %s was not stopped and disabled\n" "$srun"$reset
+                                srv_not_stoped+="0"
+                        fi
+                        done; break;;
+        [Nn]* )
+                srvstat="Failed"
+                break;;
+        * ) echo "Please answer yes or no.";;
+    esac
+done
+else 
+echo
+printf $green$" All selected services was stopped OK!\n"$reset
+srvstat="Passed"
+fi
+
+if [[ ${#srv_not_stoped} != 0 ]]; then
+        echo
+        printf $red$" Attention: %s selected services was not stop and disabled.\n" "${#srv_not_stoped}"$reset
+        srvstat="Failed"
+else
+        echo
+        printf $green$" %s selected services was stopped and disabled OK!\n" "${#srv_stoped}"$reset
+        srvstat="Passed"
+fi
+}
+
+#-------Stop and disable apt autoupgrade-------
+function stopautoupgreade {
+printf $green"Stop and disable auto upgade\n"$reset
+autoup=( "apt-daily-upgrade.timer" "apt-daily.timer" )
+for srvs in "$(sudo systemctl show ${autoup[*]})"
+do
+if [[ "${srvs}" != *"LoadError"* ]]; then
+        printf $green$" Service auto upgrade was stoped OK!\n"$reset 
+        sudo systemctl stop ${autoup[*]}
+        sudo systemctl disable ${autoup[*]}
+        printf $green$" Auto upgrade service was disabled OK!\n"$reset 
+        atu_stop+="1" 
+else
+        printf $red$" Attention: Auto upgrade service was not be stopped\n"$reset 
+        atu_not_stop+="0"
+fi
+done
+
+if [[ ${#atu_not_stop[0]} != 0 ]]; then
+        echo
+        printf $red$" Attention: %s not be stopped\n" "${#atu_not_stop}"$reset 
+        atustat="Failed"
+else
+        echo
+        printf $green" %s services was stopped OK!\n" "${#atu_stop}"$reset 
+        atustat="Passed"
+
+fi
+
+}

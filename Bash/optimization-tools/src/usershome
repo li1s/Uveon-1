@@ -1,0 +1,185 @@
+#! /bin/bash
+SCRIPTPATH="$( pwd -P )"
+
+#-------Function-------
+function homedir {
+for home_dir in "$(find /home -maxdepth 1 -mindepth 1 -type d)"
+do
+	homedir+=( $home_dir )
+done
+#-------Find files in home dir-------
+IFS=$'\n'
+for home in ${homedir[*]}
+do
+bfiles+="$(find ${home} -type f -size "+${FILESIZE}")"
+ulogfiles+="$(find ${home} -maxdepth 10 -iname "*.log")"
+mozillawb+="$(find ${home}/.mozilla/firefox/ -maxdepth 1 -type d -name "*default*")"
+mozillawbc+="$(find ${home}/.cache/mozilla/firefox/ -maxdepth 1 -type d -name "*default*")"
+bashh+="$(find ${home}/ -maxdepth 1 -type f -name ".bash_history")"
+flytheme+="$(find ${home}/ -maxdepth 1 -type d -name ".fly")"
+done
+}
+
+function bigfiles {
+#-------Find large files in home dirs-------
+echo
+if [ ${#bfiles[0]} != 0 ]; then
+while true; do
+    printf $green$"Found large files:\n %s\n" "${bfiles[*]}"$reset 
+    read -p $"Do you wish to delete all large files? ([Y]/n): " yn 2>&1
+    yn=${yn:-Y}
+    case $yn in
+        [Yy]* )
+                #-------Delete big files-------
+                        printf $green$" Delete all large files\n"$reset
+                        for bfile in ${bfiles[*]}
+                        do
+                        if result=$(sudo rm -f "${bfile}"); then
+                                printf $green$" File %s has been deleted OK!\n" "$bfile"$reset
+                                bfile_deleteded+="1" 
+                        else
+                                printf $red$" Attention: file %s has not been deleted\n" "${bfile}"$reset
+                                bfile_not_deleteded+="0"
+                        fi
+                        done; break;;
+        [Nn]* )
+                bfilestat="Failed"
+                break;;
+        * ) echo "Please answer yes or no.";;
+    esac
+done
+else 
+echo
+printf $green$" No large files found!\n"$reset
+bfilestat="Passed"
+fi
+
+if [[ ${#bfile_not_deleteded[0]} != 0 ]]; then
+        echo
+        printf $red$" Attention: %s were not deleted\n" "${#bfile_not_deleteded}"$reset
+        bfilestat="Failed"
+else
+        echo
+        printf $green$" %s large files have been deleted OK!\n" "${#bfile_deleteded}"$reset
+        bfilestat="Passed"
+fi
+}
+
+function ulog_clean {
+#-------Find and clear log files at home dir-------
+echo
+printf $green$" Clearing the log files in the user home directory\n"$reset
+for ulogfile in ${ulogfiles[*]}
+do
+	printf $green$" Clearing %s\n" "${ulogfile}"$reset
+	if result=$(sudo truncate -s 0 $ulogfile); then
+        	printf $green$" %s file has been cleared OK!\n" "$ulogfile"$reset
+                ulog_clean+="1" 
+       else
+       		printf $red$" Attention: %s file was not cleared\n" "${ulogfile}"$reset
+            	ulog_not_clean+="0"
+       fi
+done
+
+if [[ ${#ulog_not_clean[0]} != 0 ]]; then
+        echo
+        printf $red$" Attention: %s user log files were not cleaned\n" "${#ulog_not_clean}"$reset
+        ulogstat="Failed"
+else
+        echo
+        printf $green$" %s files have been cleaned OK!\n" "${#ulog_clean}"$reset
+        ulogstat="Passed"
+fi
+
+}
+
+function mozilla_wb_clean {
+#-------Clear mozill cache------
+echo
+printf $green$"Clear mozilla cache files and history\n"$reset
+if [ ${#mozillawb[0]} != 0 ]; then
+while true; do
+    printf $green$"Found mozilla cache:\n %s\n" "${mozillawb[*]}"$reset 
+    read -p $"Do you wish to delete all mozilla cache files? ([Y]/n): " yn 2>&1
+    yn=${yn:-Y}
+    case $yn in
+        [Yy]* )
+                #-------Delete mozilla cache-------
+                        printf $green$" Delete all mozilla cache files\n"$reset
+                        for mwbfile in ${mozillawb[*]}
+                        do
+                        if mwbresult=$(sudo rm -f "${mwbfile}/*.sqlite" "${mwbfile}/sessionstore.js"); then
+                                printf $green$" Files have been deleted OK!\n"$reset
+                                mwbfile_deleteded+="1" 
+                        else
+                                printf $red$" Attention: some files were not deleted\n"$reset
+                                mwbfile_not_deleteded+="0"
+                        fi
+                        done
+                        for mwbfilec in ${mozillawbc[*]}
+                        do
+                        if mwbresult=$(sudo rm -rf "${mwbfilec}"); then
+                                printf $green" Files have been deleted OK!\n"$reset
+                                mwbfilec_deleteded+="1" 
+                        else
+                                printf $red" Attention: some files were not deleted\n"$reset
+                                mwbfilec_not_deleteded+="0"
+                        fi
+                        done; break;;
+        [Nn]* )
+                mwbfilestat="Failed"
+                break;;
+        * ) echo "Please answer yes or no.";;
+    esac
+done
+
+else
+	printf $red$" Attention: Mozilla cache dir not found in user home dirs\n"$reset
+fi
+
+if [[ ${#mwbfile_not_deleteded[0]} != 0 ]]; then
+        echo
+        printf $red" Attention: Mozilla cache dir not found in user home dirs\n"$reset
+	mwbfilestat="Failed"
+else    
+        echo
+        printf $green$" %s mozilla cache files have been deleted OK!\n" "${#mwbfile_deleteded}"$reset
+	mwbfilestat="Passed"
+fi
+echo
+}
+
+function baqshhistory {
+echo
+printf $green$" Clear bash history\n"$reset
+if [ ${#bashh[0]} != 0 ]; then
+while true; do
+    printf $green$"Found bash history files:\n %s\n" "${bashh[*]}"$reset 
+    read -p $"Do you wish to delete all bash history files? ([Y]/n): " yn 2>&1
+    yn=${yn:-Y}
+    case $yn in
+        [Yy]* )
+                #-------Delete bash history files-------
+                        printf $green$" Delete all bash history files\n"$reset
+                        for bhfile in ${bashh[*]}
+                        do
+                        if resultb=$(sudo rm -f "${bhfile}"); then
+                                printf $green" File %s has been deleted OK!\n" "$bhfile"$reset
+                                bhfile_deleteded+="1" 
+                        else
+                                printf $red" Attention: file %s has not been deleted\n" "${bhfile}"$reset
+                                bhfile_not_deleteded+="0"
+                        fi
+                        done; break;;
+        [Nn]* )
+                bashstat="Failed"
+                break;;
+        * ) echo "Please answer yes or no.";;
+    esac
+done
+else 
+echo
+printf $green$" Not faund bash history files!\n"$reset
+bashstat="Passed"
+fi
+}

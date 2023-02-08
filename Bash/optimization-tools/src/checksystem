@@ -1,0 +1,97 @@
+#! /bin/bash
+#
+#-------Checking system requirements-------
+# Chek distro
+distro="$(egrep '^(NAME)=' /etc/os-release | tr -d '"' | sed s/"NAME="//)"
+if [[ "${distro}" =~ .*"Astra".* ]]; then
+        printf $green$" Guest OS is Astra OK! ("%s")\n" "${distro}" $reset
+        distrostat="Passed"
+else
+        printf $red$" Attention: Guest OS not Astra. Exit\n"$reset
+        distrostat="Failed"
+	exit 1
+fi
+
+# Chek VM
+vendor="$(sudo dmidecode -s system-manufacturer)"
+if [ "${vendor}" == "oVirt" ] || [ "${vendor}" == "QEMU" ]; then
+	printf $green$" Guest OS running on VM OK! ("%s")\n" "${vendor}"$reset
+	vendorstat="Passed"
+else
+	printf $red$" Attention: not VM. Exit"$reset
+	vendorstat="Failed"
+	return
+fi
+
+# Check CPUs
+cpus="$(nproc)"
+if [[ "${cpus}" -lt 2 ]]; then
+	printf $red$" Attention: 2 to 4 CPUs recommended for best performance!\n"$reset
+	printf $red$" Current CPU: ("%s")\n" "$((cpus))"$reset
+	cpustat="Failed"
+else
+	printf $green$" CPU for Astra Linux on Termidesk OK! ("%s")\n" "$((cpus))"$reset
+	cpustat="Passed"
+fi
+
+# Check RAM
+ram="$(awk '/MemTotal/{print $2}' /proc/meminfo)"
+if [ "$ram" -lt "$((1*1002400))" ]; then
+	printf $red$" Attention: 2 GB RAM or more recommended for Astra Linux on Termidesk!\n"$reset
+	printf $red$" Current RAM is: ("%s" GB)\n" "$((ram/1002400))" $reset
+	ramstat="Failed"
+else
+    	printf $green$" RAM for Astra Linux on Termidesk OK! ("%s" GB)\n" "$((ram/1002400))"$reset
+	ramstat="Passed"
+
+fi
+
+# Check NIC
+pci="$(lspci | awk '/Ethernet/{print $1}')"
+driver=$(find /sys | grep drivers.*${pci})
+nic="$(awk '/DRIVER/{print $1;}' ${driver}/uevent | tr -d 'DRIVER=')"
+if [ $nic != "virtio-pci" ] && [ $nic != "e1000" ]; then
+        printf $red$" Attention: no NIC on Astra Linux!\n"$reset
+	nicstat="Failed"
+else
+    	printf $green$" NIC for Astra Linux on Termidesk OK! (%s)\n" "${nic}"$reset
+	nicstat="Passed"
+fi
+
+# Check DHCP
+dhcp="$( ip route | awk '/dhcp/ {print $1}')"
+if [ "$dhcp" != "" ]; then
+	ipadd="$(ip route | awk '/dhcp/ {print $5}')"
+	printf $green$" DHCP for Astra Linux on Termidesk OK! (%s)\n" "$(ip addr show ${ipadd} | awk '/inet/ {print $2; exit}')"$reset
+	dhcpstat="Passed"
+else
+	printf $red$" DHCP not enabled\n"$reset
+	dhcpstat="Failed"
+
+fi
+
+# Check Termidesk repo
+for apt in $(find /etc/apt/ -name \*.list); do
+	repos+=$(grep -Po "(?<=^deb\s).*?(?=#|$)" $apt)
+done
+for repo in ${repos[*]}; do
+	if [[ $repo == *"termidesk"* ]]; then
+	 tdskrepo+="1"
+	else
+	 tdskrepo+="0"
+	fi
+done
+if [[ "${tdskrepo[*]}" =~ "1" ]]; then
+	printf $green$" Termidesk online repo configured OK!\n"$reset
+	repostat="Passed"
+else
+	 tdsk_ok+=$(sudo apt-cache search termidesk)
+         if [ ${#tdsk_ok[*]} = "0" ]; then
+           printf $red$" Checking config for termidesk repo\n"$reset
+           repostat="Failed"
+	   return
+         else
+	   printf $green$" Termidesk repo configured OK!\n"$reset
+	   repostat="Passed"
+         fi
+fi

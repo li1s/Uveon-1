@@ -48,7 +48,7 @@ sudo su postgres -c "psql -c \"CREATE DATABASE termidesk LC_COLLATE 'ru_RU.utf8'
 msg_ok "База данных: termidesk успешно создана"
 
 msg_info "Coздаем пользователя: termidesk"
-sudo su postgres -c "psql -c \"CREATE USER termidesk WITH PASSWORD ksedimret;\" &>>/dev/null"
+sudo su postgres -c "psql -c \"CREATE USER termidesk WITH PASSWORD 'ksedimret';\" &>>/dev/null"
 msg_ok "Пользователь termidesk создан"
 
 msg_info "Выдаем права пользователю termidesk на базу данных termidesk"
@@ -184,13 +184,7 @@ sudo debconf-set-selections answer &>>/dev/null
 msg_ok "Файл ответов считан"
 
 msg_info "Устанавливаем Termidesk"
-if [ "$(ls -1 termi*.deb|tail -n1)" ]; then
-        #Эта команда работает, если предварительно положить в каталог со скриптом пакет с Термидеском
-        sudo apt install -y ./$(ls -1 termi*.deb|tail -n1) &>/dev/null
-else
-        #Установка из репозитория
-        sudo apt install -y termidesk-vdi &>/dev/null
-fi
+sudo apt install -y termidesk-vdi &>/dev/null
 msg_ok "Установка Termidesk-VDI завершена"
 
 

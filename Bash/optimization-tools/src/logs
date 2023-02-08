@@ -1,0 +1,44 @@
+#!/bin/bash
+
+LOGFILE=tdsk-optimize$(date +"%Y%m%d%H%M").log
+ERRFILE=tdsk-optimize$(date +"%Y%m%d%H%M").err
+
+touch logs/${LOGFILE}
+touch logs/${ERRFILE}
+
+### All output to screen
+### Do nothing, this is the default
+
+
+### All Output to one file, nothing to the screen
+#exec > logs/${LOGFILE} 2>&1
+
+
+### All output to one file and all output to the screen
+#exec > >(tee -a logs/${LOGFILE}) 2>&1
+
+
+### All output to one file, STDOUT to the screen
+#exec > >(tee -a logs/${LOGFILE}) 2> >(tee -a logs/${LOGFILE} >/dev/null)
+
+
+### All output to one file, STDERR to the screen
+### Note you need both of these lines for this to work
+#exec 3>&1
+#exec > >(tee -a logs/${LOGFILE} >/dev/null) 2> >(tee -a logs/${LOGFILE} >&3)
+
+
+### STDOUT to LOGFILE, stderr to ERRFILE, nothing to the screen
+#exec > logs/${LOGFILE} 2>logs/${ERRFILE}
+
+
+### STDOUT to LOGFILE, stderr to ERRFILE and all output to the screen
+#exec > >(tee -a logs/${LOGFILE}) 2> >(tee -a logs/${ERRFILE} >&2)
+
+
+### STDOUT to LOGFILE and screen, STDERR to ERRFILE
+exec > >(tee -a logs/${LOGFILE}) 2>>logs/${ERRFILE}
+
+
+### STDOUT to LOGFILE, STDERR to ERRFILE and screen
+#exec > logs/${LOGFILE} 2> >(tee -a logs/${ERRFILE} >&2)

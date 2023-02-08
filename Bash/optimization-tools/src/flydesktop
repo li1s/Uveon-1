@@ -1,0 +1,45 @@
+#! /bin/bash
+#! /bin/bash
+BACKUPDIR="backup"
+FLYFILE="fly-optimization.conf"
+#-------Backing up fly theme files-------
+mkdir -p ${BACKUPDIR}/usr/share/fly-wm/theme/
+if stderr=$(sudo cp --backup=t /usr/share/fly-wm/theme/default.themerc ${BACKUPDIR}/usr/share/fly-wm/theme/default.themerc.backup); then
+for theme_files in "current.themerc" "default.themerc" "default.themerc.fly-mini"
+do
+	for flyt in ${flytheme[*]}
+	do
+	mkdir -p ${BACKUPDIR}/${flyt}/theme
+	cp --backup=t ${flyt}/theme/${theme_files} "${BACKUPDIR}/${flyt}/theme/${theme_files}.backup"
+	done
+done
+printf $green$" Backingup themerc files OK!\n"$reset
+printf $green$" Patching themerc files...\n"$reset
+#-------Optimize fly desctop themes-------
+#-------Read fly optimize file-------
+for line in "$(grep -Ev "^#|^$" $FLYFILE)"
+do
+           FLY+=( $line )
+done
+#-------Insert value in them-------
+for OPT in ${FLY[*]}
+do
+	sudo sed -i -E "s/^(.*)${OPT%=*}(.*)=(.+)\$/${OPT%=*} = ${OPT#*=}/i" /usr/share/fly-wm/theme/default.themerc
+	for uhome in ${flytheme[*]}
+	do
+	if [ -d $uhome/theme ]; then
+	for theme_files in current.themerc default.themerc default.themerc.fly-mini
+	do
+		sudo sed -i -E "s/^(.*)${OPT%=*}(.*)=(.+)\$/${OPT%=*} = ${OPT#*=}/i" "${uhome}/theme/${theme_files}"
+	done
+	fi
+	done
+done
+printf $green$" FLY desktop optimization finish OK!\n"$reset
+flystat=$"Passed"
+echo
+else
+printf $red$" Attention: Backupdir not create. Exit\n"
+flystat=$"Failed"
+fi
+

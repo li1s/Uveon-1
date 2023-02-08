@@ -1,0 +1,3 @@
+remote-viewer
+virt-manager
+libvirt0

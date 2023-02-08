@@ -1,0 +1,11 @@
+#
+TEXTDOMAIN=termidesk
+TEXTDOMAINDIR=locale
+PKGFILE="files/pkg_required.txt"
+SRVFILE="files/services.txt"
+RMPKGFILE="files/pkg_remove.txt"
+FLYFILE="files/fly-optimization.conf"
+BACKUPDIR="backup"
+FILESIZE=500M
+LOGFILE=tdsk-optimize$(date +"%Y%m%d%H%M").log
+ERRFILE=tdsk-optimize$(date +"%Y%m%d%H%M").err
