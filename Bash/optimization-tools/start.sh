@@ -63,7 +63,8 @@ exec 2>&1
         "12" $"Cleaning journal" OFF \
         "13" $"Optimize power button" OFF \
         "14" $"Install display resize script" OFF \
-        "15" $"Stop auto upgrade" OFF 3>&1 1>&2 2>&3)
+		"15" $"Defragmentation hdd" OFF \
+        "16" $"Stop auto upgrade" OFF 3>&1 1>&2 2>&3)
 source src/logs
 	exitstatus=$?
 	if [ $exitstatus = 0 ]; then
@@ -198,6 +199,12 @@ if [ ${vendorstat} != "Failed" ]; then
 	xsize
       ;;
     "15")
+	printf $cyan$"Defragmentation HDD...\n"$reset
+	echo
+	sleep 2 & spinner
+	source src/defragmentation
+      ;;
+	"16")
 	printf $cyan$"Stop auto update...\n"$reset
 	echo
 	sleep 2 & spinner

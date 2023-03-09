@@ -1,5 +1,4 @@
 #! /bin/bash
-#! /bin/bash
 BACKUPDIR="backup"
 FLYFILE="fly-optimization.conf"
 #-------Backing up fly theme files-------

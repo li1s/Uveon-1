@@ -1,8 +1,8 @@
 qemu-guest-agent
 xserver-xorg-video-qxl
 spice-vdagent
-astra-ad-sssd-client
-astra-freeipa-client
 python3-termidesk-agent
 termidesk-pcsc-vscard
 termidesk-video-agent
+pulseaudio
+

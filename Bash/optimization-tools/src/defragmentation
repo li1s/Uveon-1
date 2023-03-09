@@ -1,0 +1,70 @@
+#! /bin/bash
+#
+#-------Checking fragmentation-------
+# List disks and check
+disk="$(lsblk -l | grep disk | awk '{print $1}')"
+disksnum+=( $(sudo egrep -r "${disk}" /sys/devices 2>/dev/null | awk -F '=' '/DEVNAME/{print $2}' | tr -d ${disk}) )
+function defragmentation {
+for dnum in ${disksnum[@]}; do
+printf $green$" Check disk ("%s") defragmentation\n" "${disk}${dnum}" $reset
+sudo e4defrag -c /dev/${disk}${dnum}
+done
+}
+echo # Check disk scheduler
+function dscheduler {
+sche+=( "$(sudo "cat" /sys/block/${disk}/queue/scheduler)" )
+for sh in ${sche[*]}; do
+	if [[ "${sh}" =~ .*"[".* ]]; then
+	printf $green$" Current disk scheduler: "%s"\n" "$(echo ${sh} | tr -d '[]')" $reset
+	case $(echo ${sh} | tr -d '[]') in 
+    	*"deadline"*)
+	printf $green$" Disk scheduler "%s" OK!\n" "$(echo ${sh} | tr -d '[]')" $reset
+        ;;
+	*)
+	printf $red$" Disk scheduler "%s" need corect to noop or deadline!\n" "${sh}"$reset
+  	;;
+	esac
+	else
+        printf $green$" Available disk scheduler: "%s"\n" "${sh}" $reset
+	fi
+done
+}
+echo# SWAP analyze
+function swapanalyze {
+for file in /proc/*/status ; do 
+swap+=( "$(awk '/VmSwap|Name/{printf $2 " " $3}END{ print ""}' $file;)" )
+done
+for index in ${!swap[@]}; do
+nozero+=( "$(echo ${swap[$index]} | awk '{if ($2) print $1" " $2 $3}')" )
+done
+for sfindex in ${!nozero[@]}; do
+if [ "${nozero[${sfindex}]}" != '' ]; then
+printf $red$" Process use swap: "%s"\n" "${nozero[${sfindex}]}"$reset
+fi
+done
+}
+echo# List loaded services
+function loadservices {
+printf $green$" List loaded services..." $reset
+echo
+systemctl list-units  --type=service  --state=loaded | grep loaded  | head -n -2
+echo
+}# List autostart services
+function autostart {
+autostartdir+=( $(sudo find / -type d -iname "autostart" 2>/dev/null) )
+for adir in ${autostartdir[@]}; do
+printf $green$" List files for autostart in %s dir" "${adir}" $reset
+echo "$(sudo ls -R $adir 2>/dev/null)"
+done
+}# Search log files
+function searchlogs {
+echo "Log files"
+rootlog+=( $(sudo find / -path /var/log -prune -o -type f -name "*.log" -exec du -chk {} +) )
+varlog+=( $(sudo du -chk /var/log) )
+alog=$(( ${rootlog[-2]}+${varlog[-2]} ))
+printf $red$" Found %s files in root path whith total size %s\n" "${#rootlog[@]}" "${rootlog[-2]}KB" $reset
+printf $red$" Found %s files in /var/log path whith total size %s\n" "${#varlog[@]}" "${varlog[-2]}KB" $reset
+echo
+printf $red$" Total files %s has size %s\n" "$((${#rootlog[@]}+${#varlog[@]} ))" "$(( ${alog}/1024 ))MB" $reset
+echo
+}
