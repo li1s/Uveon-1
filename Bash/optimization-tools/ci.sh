@@ -49,7 +49,7 @@ case "$1" in
     rm -f logs/*
     rm -rf backup/*
     cp -r backup config files hooks locale logs src README LICENSE README.start start.sh changelog.md  _build/ 
-    shc -f _build/start.sh
+    shc -v -r -f _build/start.sh
     rm -f _build/start.sh
     rm -f _build/start.sh.x.c
     mv _build/start.sh.x _build/start

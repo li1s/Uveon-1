@@ -18,7 +18,7 @@ source ~/server/pg.txt          # Список серверов c ролью Pos
 
 for i in (server/pg.txt);
     do 
-        ssh u@"{$i}" << EOF
+        ssh u@"{$i}" << EOF >>
         sudo apt update &>/dev/null
         sudo apt dist-upgrade -y &>/dev/null
         sudo apt install postgresql -y &>/dev/null
