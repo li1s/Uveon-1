@@ -1,34 +1,38 @@
-#! /bin/sh 
+#!/bin/sh
 PATH=/usr/bin
-desktopuser=$(/bin/ps -ef  | /bin/grep -oP  '^\w+ (?=.*vdagent( |$))') || exit 0
-export DISPLAY=:0
-export XAUTHORITY=$(eval echo "~$desktopuser")/.Xauthority
-
+# Имя пользователя получается через вывод списка пользователей (заголовки отключены), от имени которых запущен spice-vdagent | из списка вырезается имя fly-dm (сессия отображения ввода логина-пароля)
+desktopuserlist=$(/bin/ps -o user:80= -C spice-vdagent | grep -v fly-dm) || exit 0
+# Проверенное решение, но работает только для имён пользователей без дефисов, пробелов и т.д.
+#desktopuserlist=$(/bin/ps -ef  | /bin/grep -oP  '^\w+ (?=.*vdagent( |$))') || exit 0
+for desktopuser in $desktopuserlist; do
+  export DISPLAY=:0
+  export XAUTHORITY=$(eval echo "~$desktopuser")/.Xauthority
+ 
 #Get active monitors
-ACTMONS=$(xrandr --listactivemonitors | awk '/[[:alnum:]]+ +/ {print $4}' | sort)
+  ACTMONS=$(xrandr --listactivemonitors | awk '/[[:alnum:]]+ +/ {print $4}' | sort)
 #Get primary monitor
-PRIMARYMON=$(xrandr --listactivemonitors | awk '/*/ {print $4}')
-
+  PRIMARYMON=$(xrandr --listactivemonitors | awk '/*/ {print $4}')
+ 
 #Get current and preferred display resolutions
-for MON in $ACTMONS
-do
-        #Get preferred display resolution
-        PREFRES=$(xrandr | awk -v monpref="$MON connected" '/connected/ {p = 0} $0 ~ monpref {p = 1} p' | awk '/+/ {print $1;}' | sed -n '2~2p')
-        #Get current display resolution
-        CURNRES=$(xrandr | awk -v moncurn="$MON connected" '/connected/ {p = 0} $0 ~ moncurn {p = 1} p' | awk '/*/ {print $1;}')
-        if [[ $CURNRES != $PREFRES ]];
+  for MON in $ACTMONS
+  do
+    #Get preferred display resolution
+    PREFRES=$(xrandr | awk -v monpref="$MON connected" '/connected/ {p = 0} $0 ~ monpref {p = 1} p' | awk '/+/ {print $1;}' | sed -n '2~2p')
+    #Get current display resolution
+    CURNRES=$(xrandr | awk -v moncurn="$MON connected" '/connected/ {p = 0} $0 ~ moncurn {p = 1} p' | awk '/*/ {print $1;}')
+    if [[ $CURNRES != $PREFRES ]];
+    then
+        if [[ $MON == $PRIMARYMON ]];
         then
-                if [[ $MON == $PRIMARYMON ]];
-                then
-                                xrandr --output $MON --auto
-                                logger -p local0.notice -t ${0##*/}[$$] "$MON primary display change resolution to preferred $PREFRES"
-                else
-#                               xrandr --output $MON --auto
-                                xrandr --output $MON --left-of $PRIMARYMON --auto
-                                logger -p local0.notice -t ${0##*/}[$$] "$MON display change resolution to preferred $PREFRES and left of $PRIMARYMON"
-                fi
+                xrandr --output $MON --auto
+                logger -p local0.notice -t ${0##*/}[$$] "$MON primary display change resolution to preferred $PREFRES"
         else
-                logger -p local0.notice -t ${0##*/}[$$] "$MON display is already using preferred resolution $PREFRES"
-
+                xrandr --output $MON --left-of $PRIMARYMON --auto
+                logger -p local0.notice -t ${0##*/}[$$] "$MON display change resolution to preferred $PREFRES and left of $PRIMARYMON"
         fi
+    else
+        logger -p local0.notice -t ${0##*/}[$$] "$MON display is already using preferred resolution $PREFRES"
+ 
+    fi
+  done
 done
