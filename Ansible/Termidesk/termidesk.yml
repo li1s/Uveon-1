@@ -92,7 +92,18 @@
       enabled: yes
       state: started
     
-  
+  - name: Enable and start termidesk-wsproxy.service
+    ansible.builtin.systemd:
+      service: "{{ termidesk_celery_worker }}"
+      enabled: yes
+      state: started
+    
+    - name: Enable and start termidesk-wsproxy.service
+    ansible.builtin.systemd:
+      service: "{{ termidesk_celery_beat }}"
+      enabled: yes
+      state: started
+    
   
   
   

@@ -4,6 +4,11 @@ db_password: ksedimret
 db_name: termidesk
 db_host: 192.168.18.218
 
+### RabbitMQ 
+user_name: termidesk
+user_password: ksedimret
+vhost_name: termidesk
+
 
 ### Install package list ###
 termidesk_pkgs:
@@ -13,6 +18,8 @@ termidesk_pkgs:
 termidesk_vdi_service: termidesk-vdi.service
 termidesk_taskman_service: termidesk-taskman.service
 termidesk_gateway_sevice: termidesk-wsproxy.service
+termidesk_celery_worker:  termidesk-celery-worker.service
+termidesk_celery_beat: termidesk-celery-beat.service
 
 
 ### Apache2 conf
