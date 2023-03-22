@@ -1,0 +1,25 @@
+---
+- name: Enable & start servicer on termidesk-taskman hosts
+  hosts: termidesk-taskman
+  become: true
+  vars_files:
+    - vars.yml
+
+  tasks:
+  - name: Enable and start termidesk-celery-worker.service
+    ansible.builtin.systemd:
+      service: "{{ termidesk_celery_worker }}"
+      enabled: true
+      state: started
+    
+  - name: Enable and start termidesk-celery-beat.service
+    ansible.builtin.systemd:
+      service: "{{ termidesk_celery_beat }}"
+      enabled: true
+      state: started
+   
+  - name: Enable and start termidesk-taskman.service
+    ansible.builtin.systemd:
+      service: "{{ termidesk_taskman_service }}"
+      enabled: false
+      state: started

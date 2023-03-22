@@ -1,6 +1,9 @@
 [db]
 192.168.18.220
 
+[rabbitmq]
+192.168.18.220
+
 [termidesk-vdi]
 192.168.18.23
 192.168.18.23
@@ -13,6 +16,9 @@
 192.168.18.234
 192.168.18.235
 
-[localhost]
-localhost ansible_connection=local ansible_python_interpreter=python3.9
+[balancer]
 
+[termidesk]
+termidesk-vdi
+termidesk-wsproxy
+termidesk-taskman

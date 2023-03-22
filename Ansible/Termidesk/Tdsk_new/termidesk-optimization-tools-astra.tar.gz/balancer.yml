@@ -1,0 +1,35 @@
+---
+- name: Install nginx
+  host: balancer
+  become: true
+ 
+  vars_files:
+    - vars.yml
+
+  pre-tasks:
+    - name: Install nginx package
+      apt: "name={{ item }} state=present"
+      with_items:
+        - nginx
+
+  tasks:
+    - name: Remove default nginx config
+      file:
+        path: /etc/nginx/sites-enabled/default
+        state: absent
+
+    - name: Create nginx config
+      template:
+        src: nginx.conf.j2
+        dest: /etc/nginx/sites-available/load-balancer.conf
+
+    - name: Create symlink to nginx config
+      file:
+        src: /etc/nginx/sites-available/load-balancer.conf
+        dest: /etc/nginx/sites-enabled/load-balancer.conf
+        state: link
+
+    - name: Reload nginx
+      service:
+        name: nginx
+        state: reloaded

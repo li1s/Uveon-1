@@ -1,0 +1,13 @@
+---
+- name: Enable & start servicer on termidesk-gateway hosts
+  hosts: termidesk-wsproxy
+  become: true
+  vars_files:
+    - vars.yml
+
+  tasks:
+  - name: Enable and start termidesk-wsproxy.service
+    ansible.builtin.systemd:
+      service: "{{ termidesk_gateway_sevice }}"
+      enabled: true
+      state: started

@@ -1,0 +1,42 @@
+---
+- name: Add repo from Termidesk.iso
+  hosts: termidesk
+  vars_files:
+    - vars.yml
+
+  tasks:
+  - name: copy Termidesk.iso on hosts
+    ansible.builtin.copy:
+      src: /home/"{{ remote_user }}"/"{{ tdsk_iso }}"
+      dest: /home/"{{ remote_user }}"/"{{ tdsk_iso }}"
+      owner: "{{ remote_user }}"
+      mode: '0644'
+
+
+
+  - name: Add local repo from file
+    become: true
+    shell: astra-update -a -k -T /home/"{{ remote_user }}"/"{{ tdsk_iso }}"
+
+  - name: Update repository
+    apt:
+      update_cache: yes
+      force_apt_get: yes
+      cache_valid_time: 3600
+
+  - name: Upgrade all packages on servers
+    apt:
+      upgrade: dist
+      force_apt_get: yes
+
+
+
+
+#  - hosts: webservers
+#    tasks:
+#    - name: Copy file to remote hosts
+#      copy:
+#        src: /path/to/source/file
+#        dest: /path/to/destination/file
+#      delegate_to: "{{ item }}"
+#      with_items: "{{ groups['webservers'] }}"

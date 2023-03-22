@@ -1,0 +1,40 @@
+global_defs {
+    router_id {{ router_id }}  
+    script_user {{ script_user }}
+    enable_script_security
+}
+
+vrrp_script check_nginx {
+    script "/usr/bin/pgrep apache"
+    interval 1
+    timeout 3   
+    rise 1              
+    fall 2                
+    init_fail
+}
+
+vrrp_instance termidesk-taskman {
+    notify /etc/keepalived/notify.sh
+    state BACKUP
+    interface {{ keepalived_interface }}
+    virtual_router_id {{ virtual_router_id }}
+    priority 128
+    preempt_delay 5
+    advert_int 1
+    unicast_src_ip {{ ansible_eth0.ipv4.address }} 
+}
+authentication {
+    auth_type PASS
+    auth_pass {{ auth_pass }}
+}
+
+
+virtual_ipaddress {
+{{keepalived_vip}}/24 dev {{keepalived_interface}} label {{keepalived_interface}}:{{virtual_router_id}}
+}
+
+
+track_script {
+    check_httpd
+}
+

@@ -1,0 +1,24 @@
+---
+- name: Add ssh keys to all host
+  hosts: all
+  gather_facts: false
+  remote_user: "{{ remote_user }}"
+- name: fetch all public ssh keys
+  shell: cat ~/.ssh/id_rsa.pub
+  register: ssh_keys
+  tags:
+    - ssh
+
+- name: check keys
+  debug: msg="{{ ssh_keys.stdout }}"
+  tags:
+    - ssh
+
+- name: deploy keys on all servers
+  authorized_key: user="{{ remote_user }}" key="{{ item[0] }}"
+  delegate_to: "{{ item[1] }}"
+  with_nested:
+    - "{{ ssh_keys.stdout }}"
+    - "{{groups['controllers']}}"
+  tags:
+    - ssh
