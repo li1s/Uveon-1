@@ -1,6 +1,6 @@
 ---
 - hosts: db
-  become: yes
+  become: true
   gather_facts: true
   
   vars_files:
@@ -29,7 +29,7 @@
         lc_collate: ru_RU.UTF-8
         lc_ctype: ru_RU.UTF-8
         template: template0
-      become: yes
+      become: true
       become_user: postgres
 
     - name: "Create db user"
@@ -37,7 +37,7 @@
         state: present
         name: "{{ db_user }}"
         password: "{{ db_password }}"
-      become: yes
+      become: true
       become_user: postgres
 
     - name: "Grant db user access to app db"
@@ -47,6 +47,6 @@
         roles: "{{ db_user }}"
         grant_option: no
         privs: all
-      become: yes
+      become: true
       become_user: postgres
 

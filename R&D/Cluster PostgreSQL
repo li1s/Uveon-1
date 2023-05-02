@@ -1,0 +1,269 @@
+
+#cluster #postgresql #RnD
+### Архитектура стенда:
+
+**Machine: postgresql1                   IP: 192.168.18.200               Role: Postgresql, Patroni**
+
+**Machine: postgresql2                   IP: 192.168.18.192               Role: Postgresql, Patroni**
+
+**Machine: postgresql3                   IP: 192.168.18.193               Role: Postgresql, Patroni**
+
+**Machine: etcdnode                        IP: 192.168.18.189               Role: etcd**
+
+**Machine: haproxynode                 IP: 192.168.18.202               Role: HA Proxy**
+
+#### Шаг 1. На машинах postgresql1 / postgresql2 / postgresql3 выполняем следующие шаги: 
+```python
+sudo apt update
+
+sudo hostnamectl set-hostname nodeN
+
+sudo apt install net-tools
+
+sudo apt -y install postgresql postgresql-server-dev-11
+
+sudo systemctl stop postgresql
+
+sudo ln -s /usr/lib/postgresql/11/bin/* /usr/sbin/
+
+sudo apt -y install python python3-pip
+
+sudo apt -y install python3-testresources   
+
+sudo pip3 install --upgrade setuptools 
+ 
+sudo pip3 install psycopg2
+
+sudo pip3 install patroni
+
+sudo pip3 install python-etcd
+```
+
+#### Шаг 2. Установка etcd: 
+```python
+sudo apt update
+
+sudo hostnamectl set-hostname etcdnode
+
+sudo apt install net-tools
+
+sudo apt -y install etcd 
+```
+
+#### Шаг 3. Установка HAproxy:
+```python
+sudo apt update
+
+sudo hostnamectl set-hostname haproxynode
+
+sudo apt install net-tools
+
+sudo apt -y install haproxy
+```
+
+#### Шаг 4. Конфигурация etcd ноды:
+```python
+sudo vi /etc/default/etcd   
+
+ETCD_LISTEN_PEER_URLS="http://192.168.18.189:2380"
+ETCD_LISTEN_CLIENT_URLS="http://localhost:2379,http://192.168.18.189:2379"
+ETCD_INITIAL_ADVERTISE_PEER_URLS="http://192.168.18.189:2380"
+ETCD_INITIAL_CLUSTER="default=http://192.168.18.189:2380,"
+ETCD_ADVERTISE_CLIENT_URLS="http://192.168.18.189:2379"
+ETCD_INITIAL_CLUSTER_TOKEN="etcd-cluster"
+ETCD_INITIAL_CLUSTER_STATE="new"
+
+sudo systemctl restart etcd 
+
+sudo systemctl status etcd
+
+curl http://192.168.18.189:2380/members
+```
+
+#### Шаг 5. Конфигурация Patroni на машинах postgresql1 / postgresql2 / postgresql3:
+```bash
+sudo vi /etc/patroni.yml
+
+scope: postgres
+namespace: /db/
+name: node<N>
+
+restapi:
+    listen: <nodeN_ip>:8008
+    connect_address: <nodeN_ip>:8008
+
+etcd:
+    host: <etcdnode_ip>:2379
+
+bootstrap:
+  dcs:
+    ttl: 30
+    loop_wait: 10
+    retry_timeout: 10
+    maximum_lag_on_failover: 1048576
+    postgresql:
+      use_pg_rewind: true
+      use_slots: true
+      parameters:
+
+  initdb:
+  - encoding: UTF8
+  - data-checksums
+
+  pg_hba:
+  - host replication replicator 127.0.0.1/32 md5
+  - host replication replicator <node1_ip>/0 md5
+  - host replication replicator <node2_ip>/0 md5
+  - host replication replicator <node3_ip>/0 md5
+  - host all all 0.0.0.0/0 md5
+
+  users:
+    admin:
+      password: admin
+      options:
+        - createrole
+        - createdb
+
+postgresql:
+  listen: <nodeN_ip>:5432
+  connect_address: <nodeN_ip>:5432
+  data_dir: /data/patroni
+  pgpass: /tmp/pgpass
+  authentication:
+    replication:
+      username: replicator
+      password: ************
+    superuser:
+      username: postgres
+      password: ************
+  parameters:
+      unix_socket_directories: '.'
+
+tags:
+    nofailover: false
+    noloadbalance: false
+    clonefrom: false
+    nosync: false
+
+```
+
+
+``` bash
+sudo mkdir -p /data/patroni
+
+sudo chown postgres:postgres /data/patroni
+
+sudo chmod 700 /data/patroni 
+
+sudo vi /etc/systemd/system/patroni.service
+
+[Unit]
+Description=High availability PostgreSQL Cluster
+After=syslog.target network.target
+
+[Service]
+Type=simple
+User=postgres
+Group=postgres
+ExecStart=/usr/local/bin/patroni /etc/patroni.yml
+KillMode=process
+TimeoutSec=30
+Restart=no
+
+[Install]
+WantedBy=multi-user.targ
+```
+
+#### Шаг 6. Запускаем сервис Patroni на машинах postgresql1 / postgresql2 / postgresql3: 
+```python
+sudo systemctl start patroni
+
+sudo systemctl status patroni
+```
+
+#### Шаг 7. Конфигурация балансировщика нагрузки HAproxy: 
+```bash
+
+sudo vi /etc/haproxy/haproxy.cfg
+
+Replace its context with this:
+
+global
+
+        maxconn 100
+        log     127.0.0.1 local2
+
+defaults
+        log global
+        mode tcp
+        retries 2
+        timeout client 30m
+        timeout connect 4s
+        timeout server 30m
+        timeout check 5s
+
+listen stats
+    mode http
+    bind *:7000
+    stats enable
+    stats uri /
+
+listen postgres
+    bind *:5000
+    option httpchk
+    http-check expect status 200
+    default-server inter 3s fall 3 rise 2 on-marked-down shutdown-sessions
+    server node1 <node1_ip>:5432 maxconn 100 check port 8008
+    server node2 <node2_ip>:5432 maxconn 100 check port 8008
+    server node3 <node3_ip>:5432 maxconn 100 check port 8008
+```
+
+#### Шаг 8. Запускаем службу HAproxy и проверяем состояние:
+```python
+sudo systemctl restart haproxy
+
+sudo systemctl status haproxy
+```
+
+#### Шаг 9. Тестируем: 
+```python
+http://<haproxynode_ip>:7000/>
+```
+
+В рамках тестирования симулируем ситуацию падения ноды postgresql1:
+```python
+sudo systemctl stop patroni
+```
+
+#### Шаг 10. Подключаемся к базе данных для просмотра статуса: 
+```python
+psql -h <haproxynode_ip> -p 5000 -U postgres
+```
+
+```python
+psql -h 192.168.18.202 -p 5000 -U postgres
+Password for user postgres: 
+psql (12.4)
+Type "help" for help.
+
+postgres=# 
+```
+
+```python
+psql -h 192.168.18.202 -p 5000 -U some_db
+Password for user some_user: 
+psql (12.4)
+Type "help" for help.
+
+some_db=>
+```
+
+```python
+z
++ Cluster: postgres (6871178537652191317) ---+----+-----------+
+| Member | Host          | Role    | State   | TL | Lag in MB |
++--------+---------------+---------+---------+----+-----------+
+| node1  | 192.168.18.200 | Replica | running |  2 |         0 |
+| node2  | 192.168.18.192 | Leader  | running |  2 |           |
+| node3  | 192.168.18.193 | Replica | running |  2 |         0 |
++--------+---------------+---------+---------+----+-----------+
