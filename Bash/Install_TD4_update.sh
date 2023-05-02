@@ -31,15 +31,15 @@ function msg_ok() {
   echo -e "${BFR} ${CM} ${GN}${msg}${CL}"
 }
 echo "============================================================================"
-echo "=====          Установка  Termidesk 4 редакции                         ====="
+echo "=====         Установка  Termidesk редакции 4.1                        ====="
 echo "============================================================================"
 
-msg_info "Устанавливаем обновления используя команду apt update"
+msg_info "Устанавливаем обновления"
 sudo apt update &>/dev/null
 sudo apt dist-upgrade -y &>/dev/null
 msg_ok "Обновления успешно установлены"
 
-msg_info "Устанавливаем СУБД PostgreSQL командой: sudo apt install postgresql"
+msg_info "Устанавливаем СУБД PostgreSQL"
 sudo apt install postgresql -y &>/dev/null
 msg_ok "СУБД PostgreSQL успешно установлена"
 
@@ -81,7 +81,7 @@ sudo cat << EOF >> /etc/rabbitmq/definitions.json
     "users": [
         {
             "name": "termidesk",
-            "password_hash": "pnXiDJtUdk7ZceL9iOqx44PeDgRa+X1+eIq+7wf/PTONLb1h",
+            "password_hash": "CB5alyytbbHro/GGjfbf3/+IN1hIpgOujtWTpc0NTgz4Bnkp",
             "hashing_algorithm": "rabbit_password_hashing_sha256",
             "tags": ""
         },
@@ -176,6 +176,8 @@ termidesk-vdi   termidesk-vdi/rabbitmq_url3     password
 termidesk-vdi   termidesk-vdi/rabbitmq_url2     password
 # Choices: 1 amqp://termidesk:termidesk@127.0.0.1:5672/termidesk, 2 Empty, 3 Empty, Save
 termidesk-vdi   termidesk-vdi/rabbitmq_select   select Save
+# Role for install
+termidesk-vdi   termidesk-vdi/roles    string Broker, Gateway, Task manager
 EOF
 msg_ok "Файл ответов создан"
 
@@ -194,13 +196,8 @@ sudo systemctl restart apache2
 msg_ok "Изменения в apache2.conf внесены"
 
 
-msg_info "Запускаем службы Termidesk"
-sudo systemctl enable termidesk-vdi termidesk-taskman termidesk-wsproxy termidesk-celery-beat.service termidesk-celery-worker.service	
-sudo systemctl start termidesk-vdi termidesk-taskman termidesk-wsproxy termidesk-celery-beat.service termidesk-celery-worker.service	
-msg_ok "Службы Termidesk запущены"
-
 echo "============================================================================"
-echo "=====          Установка  Termidesk стандартной редакции завершена     ====="
+echo "=====            Установка  Termidesk 4.1 завершена                    ====="
 echo "=====    Для доступа требуется перейти в web браузере по адресу:       ====="
 echo "=====    https://<FQDN сервера termidesk> && https://<ipaddress>       ====="
 echo "============================================================================"
