@@ -28,7 +28,12 @@ function msg_info() {
 
 function msg_ok() {
   local msg="$1"
-  echo -e "${BFR} ${CM} ${GN}${msg}${CL}"
+  echo -e "${BFR} ${CM} ${RD}${msg}${CL}"
+}
+
+function msg_error() {
+    local msg="$1"
+    echo -e "${BFR} ${CM} ${GN}${msg}${CL}"
 }
 echo "============================================================================"
 echo "=====         Установка  Termidesk редакции 4.1                        ====="
@@ -36,7 +41,8 @@ echo "==========================================================================
 
 msg_info "Устанавливаем обновления"
 sudo apt update &>/dev/null
-sudo apt dist-upgrade -y &>/dev/null
+#sudo apt dist-upgrade -y &>/dev/null
+astra-update -A -r -T
 msg_ok "Обновления успешно установлены"
 
 msg_info "Устанавливаем СУБД PostgreSQL"
@@ -44,11 +50,11 @@ sudo apt install postgresql -y &>/dev/null
 msg_ok "СУБД PostgreSQL успешно установлена"
 
 msg_info "Создаем БД: termidesk \n"
-sudo su postgres -c "psql -c \"CREATE DATABASE termidesk LC_COLLATE 'ru_RU.utf8' LC_CTYPE 'ru_RU.utf8' TEMPLATE template0;\" &>>/dev/null"
+sudo su postgres -c "psql -c \"CREATE DATABASE termidesk LC_COLLATE 'ru_RU.utf8' LC_CTYPE 'ru_RU.utf8' TEMPLATE template0;\" &>>/dev/null" || echo "База данных с таким именем уже существует"
 msg_ok "База данных: termidesk успешно создана"
 
 msg_info "Coздаем пользователя: termidesk"
-sudo su postgres -c "psql -c \"CREATE USER termidesk WITH PASSWORD 'ksedimret';\" &>>/dev/null"
+sudo su postgres -c "psql -c \"CREATE USER termidesk WITH PASSWORD 'ksedimret';\" &>>/dev/null" || echo "Пользователь с таким именем уже существует"
 msg_ok "Пользователь termidesk создан"
 
 msg_info "Выдаем права пользователю termidesk на базу данных termidesk"
@@ -145,7 +151,7 @@ sudo chmod 0644 /etc/rabbitmq/rabbitmq.conf
 sudo chmod 0644 /etc/rabbitmq/definitions.json
 
 sudo rabbitmq-plugins enable rabbitmq_management
-sudo systemctl restart rabbitmq-server
+sudo systemctl restart rabbitmq-server || echo "Возникла ошибка, выполните команду journalctl -xe"
 msg_ok "Настройка RabbitMQ-server выполнена успешно"
 
 msg_info "Создаем файл ответов для тихой установки Termidesk"
@@ -179,8 +185,6 @@ termidesk-vdi   termidesk-vdi/rabbitmq_select   select Save
 # Role for install
 termidesk-vdi   termidesk-vdi/roles    string Broker, Gateway, Task manager
 EOF
-msg_ok "Файл ответов создан"
-
 msg_info "Считываем файл ответов"
 sudo debconf-set-selections answer &>>/dev/null
 msg_ok "Файл ответов считан"
@@ -188,6 +192,7 @@ msg_ok "Файл ответов считан"
 msg_info "Устанавливаем Termidesk"
 sudo apt install -y termidesk-vdi &>/dev/null
 msg_ok "Установка Termidesk-VDI завершена"
+
 
 
 msg_info "Вносим изменения в apache2.conf"
