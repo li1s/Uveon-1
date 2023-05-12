@@ -1,8 +1,8 @@
 #! /bin/bash
 #
 #-------Include files-------
-source ~/config
-source ~/src/logs
+#source ~/config
+#source ~/src/logs
 echo $1
 if [ "$1" != '' ] ; then
 case "$1" in
@@ -65,7 +65,7 @@ exec 2>&1
         "14" $"Install display resize script" OFF \
 		"15" $"Defragmentation hdd" OFF \
         "16" $"Stop auto upgrade" OFF 3>&1 1>&2 2>&3)
-source src/logs
+#source src/logs
 	exitstatus=$?
 	if [ $exitstatus = 0 ]; then
 		if [ -z "$select_functions" ]; then
