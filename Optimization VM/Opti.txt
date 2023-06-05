@@ -96,3 +96,10 @@ https://highload.today/optimizatsiya-servera-na-ubuntu/
 
 
 проверять о наличии опенмь ещщды и удалить его с информацией + такой же пакет под виртуал бокс 
+
+
+
+
+
+
+sudo TermideskAgentConfig-pkexec dmctl login --user-name slebedev --user-password '657frodo'
