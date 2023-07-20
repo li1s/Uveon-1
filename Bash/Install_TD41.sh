@@ -87,7 +87,7 @@ sudo cat << EOF >> /etc/rabbitmq/definitions.json
     "users": [
         {
             "name": "termidesk",
-            "password_hash": "CB5alyytbbHro/GGjfbf3/+IN1hIpgOujtWTpc0NTgz4Bnkp",
+            "password_hash": "x6Z6bT2JlakSR9JiUZmCIjhYGR+10PRRu7CZljrV5FwUVcTh",
             "hashing_algorithm": "rabbit_password_hashing_sha256",
             "tags": ""
         },

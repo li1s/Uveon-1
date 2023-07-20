@@ -7,7 +7,7 @@ try:
     proginfo = str.split(output)
     #print (proginfo)
     print ("\n\
-    Путь:\t\t", proginfo[5], "\n\
+    Путь:\t\t", proginfo[0], proginfo[1], "\n\
     Владелец:\t\t\t", proginfo[0], "\n\
     ID процесса:\t\t", proginfo[1], "\n\
     ID родительского процесса:\t", proginfo[2], "\n\

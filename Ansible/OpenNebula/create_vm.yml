@@ -1,6 +1,29 @@
 ---
-- name: Create a new instance
-  community.general.one_vm:
-    template_id: 18
-  register: result 
-  
+- name: create_vm_on_opennebula
+  hosts: localhost
+  connection: local
+  gather_facts: no
+
+  vars:
+    one_xmlrpc_url: http://<ONE_XMLRPC_HOST>:2633/RPC2
+    one_auth: <ONE_USERNAME>:<ONE_PASSWORD>
+    one_template_id: <TEMPLATE_ID>
+    one_vm_name: <VM_NAME>
+    one_vm_memory: <VM_MEMORY>
+    one_vm_cpu: <VM_CPU>
+
+  tasks:
+   - name: create VM
+     community.general.one_vm:
+       state: present
+       xmlrpc_url: "{{ one_xmlrpc_url }}"
+       auth: "{{ one_auth }}"
+       name: "{{ one_vm_name }}"
+       template_id: "{{ one_template_id }}"
+       memory: "{{ one_vm_memory }}"
+       cpu: "{{ one_vm_cpu }}"
+     register: vm
+
+   - name: print VM ID
+     debug:
+       var: vm.id
