@@ -1,0 +1,31 @@
+- name: Install Keepalived
+  hosts: termidesk-taskman
+  become: true
+  vars_files:
+    - vars.yml
+
+  tasks:
+    - name: Install Keepalived packages
+      package:
+        name:
+          - keepalived
+          - ipset
+        state: latest
+
+- name: Create Keepalived configuration file from template
+  template:
+    src: keepalived.conf.j2
+    dest: /etc/keepalived/keepalived.conf
+    owner: root
+    group: root
+    mode: '0744'
+
+- name: Copy notify.sh at hosts 
+  copy:
+    src: notify.sh
+    dest: /etc/keepalived/notify.sh
+  delegate_to: "{{ item }}"
+  with_items: "{{ groups['termidesk-taskman'] }}"
+
+  notify:
+    - restart keepalived

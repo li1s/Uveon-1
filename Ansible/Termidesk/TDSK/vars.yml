@@ -1,0 +1,62 @@
+---
+# Remote user on all host
+remote_user: u
+tdsk_iso: termidesk-4.0.23027.iso
+
+# СУБД PostgreSQL
+db_user: termidesk
+db_password: ksedimret
+db_name: termidesk
+db_host: 192.168.18.220
+
+### RabbitMQ 
+user_name: termidesk
+user_password: ksedimret
+vhost_name: termidesk
+
+
+### Install package list ###
+termidesk_pkgs:
+  - termidesk-vdi
+
+### Keepalived
+router_id: hostname_taskman_node
+script_user: root
+virtual_router_id: 106
+keepalived_vip: 192.168.18.100
+keepalived_interface: eth0
+auth_pass: ksedimret
+
+### nginx
+proxy_termidesk:
+proxy_dispatcher:
+
+### Termidesk services
+termidesk_vdi_service: termidesk-vdi.service
+termidesk_taskman_service: termidesk-taskman.service
+termidesk_gateway_sevice: termidesk-wsproxy.service
+termidesk_celery_worker:  termidesk-celery-worker.service
+termidesk_celery_beat: termidesk-celery-beat.service
+
+
+### Apache2 conf
+termidesk_apache_sevice: apache2.service
+termidesk_apache_conf: "/etc/apache2/apache2.conf"
+
+### Include Termidesk answer file ###
+termidesk_debconf_general:
+  - ["termidesk-vdi", "termidesk-vdi/yesno-eula", "boolean", "true"]
+  - ["termidesk-vdi", "termidesk-vdi/interactive", "boolean", "false"]
+
+termidesk_debconf_db:
+  - ["termidesk-vdi", "termidesk-vdi/dbhost", "string", "{{ db_host }}"]
+  - ["termidesk-vdi", "termidesk-vdi/dbname", "string", "{{ db_name }}"]
+  - ["termidesk-vdi", "termidesk-vdi/dbuser", "string", "{{ db_user }}"]
+  - ["termidesk-vdi", "termidesk-vdi/dbpass", "string", "{{ db_password }}"]
+  - ["termidesk-vdi", "termidesk-vdi/rabbitmq_url1", "password"]
+
+termidesk_debconf_rabbitmq:
+  - ["termidesk-vdi", "termidesk-vdi/rabbitmq_url1", "password", "amqp://{{ user_name }}:{{ user_password }}@127.0.0.1:5672/{{ vhost_name }}"]
+
+termidesk_debconf_role:
+  - ["termidesk-vdi", "termidesk-vdi/roles", "string", "absent"]

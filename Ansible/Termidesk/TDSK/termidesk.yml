@@ -1,0 +1,41 @@
+---
+- name: Install Termidesk From repo
+  hosts: termidesk
+  become: true
+  vars_files:
+    - vars.yml
+
+  tasks:
+  - name: Correct mswitch.conf
+    lineinfile:
+      path: /etc/parsec/mswitch.conf
+      regexp: '^zero_if_notfound'
+      line: "zero_if_notfound: yes"
+
+
+  - name: Install termidesk pkgs
+    apt:
+      name: "{{ termidesk_pkgs }}"
+      state: present
+      update_cache: true
+    register: termidesk_pkg_installed
+
+
+  - name: Disable AstraMode in termidesk_apache_conf
+    ansible.builtin.lineinfile:
+      dest: "{{ termidesk_apache_conf }}"
+      regexp: "^AstraMode"
+      line: "AstraMode off"
+      insertafter: '^# AstraMode on'
+      state: present
+
+
+  - name: Restart apache2.service
+    ansible.builtin.systemd:
+      state: restarted
+      name: "{{ termidesk_apache_sevice }}"
+      enabled: true
+
+  - name: Reload systemd daemon
+    ansible.builtin.systemd:
+      daemon_reload: true
