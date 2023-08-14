@@ -1,5 +1,6 @@
 ---
-- hosts: db
+- name: Install && Configure PosrtgreSQL
+  hosts: db
   become: true
   gather_facts: true
   
@@ -45,7 +46,7 @@
         type: database
         database: "{{ db_name }}"
         roles: "{{ db_user }}"
-        grant_option: no
+        grant_option: false
         privs: all
       become: true
       become_user: postgres

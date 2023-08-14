@@ -40,11 +40,6 @@
         - name: rabbitmq_management
           state: enabled
 
-#    - name: Enable RabbitMQ management plugin
-#      rabbitmq_plugin:
-#        names: "{{ rabbitmq_plugins | map(attribute='name') | list }}"
-#        state: "{{ rabbitmq_plugins | map(attribute='state') | list }}"
-
     - name: Enable rabbitmq_management plugin
       become: true
       shell: rabbitmq-plugins enable rabbitmq_management

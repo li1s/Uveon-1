@@ -16,10 +16,11 @@
 
   - name: Add local repo from file
     become: true
+    ansible.legacy.shell:
     shell: astra-update -a -k -T /home/"{{ remote_user }}"/"{{ tdsk_iso }}"
 
   - name: Update repository
-    apt:
+    ansible.legacy.apt:
       update_cache: yes
       force_apt_get: yes
       cache_valid_time: 3600
