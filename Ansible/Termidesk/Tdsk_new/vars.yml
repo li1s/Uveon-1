@@ -1,7 +1,7 @@
 ---
 # Remote user on all host
-remote_user: u
-tdsk_iso: termidesk-4.0.23027.iso
+remote_user: root
+tdsk_iso: termidesk-411.iso
 
 # СУБД PostgreSQL
 db_user: termidesk
@@ -28,8 +28,10 @@ keepalived_interface: eth0
 auth_pass: ksedimret
 
 ### nginx
-proxy_termidesk:
-proxy_dispatcher:
+proxy_termidesk: (192.168.18.100, 192.168.18.101, 192.168.18.102. 192.168.18.103)
+
+proxy_dispatcher: 192.168.18.100
+
 
 ### Termidesk services
 termidesk_vdi_service: termidesk-vdi.service
