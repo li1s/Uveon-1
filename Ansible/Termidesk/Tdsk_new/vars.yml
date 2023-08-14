@@ -28,10 +28,17 @@ keepalived_interface: eth0
 auth_pass: ksedimret
 
 ### nginx
-proxy_termidesk: (192.168.18.100, 192.168.18.101, 192.168.18.102. 192.168.18.103)
+proxy_termidesk: 
+- 192.168.18.100:5099;
+- 192.168.18.101:5099;
+- 192.168.18.102:5099;
+- 192.168.18.103:5099;
 
-proxy_dispatcher: 192.168.18.100
-
+proxy_dispatcher: 
+- 192.168.18.110
+- 192.168.18.111 
+- 192.168.18.112 
+- 192.168.18.113
 
 ### Termidesk services
 termidesk_vdi_service: termidesk-vdi.service
