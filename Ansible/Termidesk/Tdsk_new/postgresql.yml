@@ -14,11 +14,15 @@
         - postgresql-contrib
         - libpq-dev
         - python3-psycopg2
+      tags:
+      - postgres
 
     - name: Install Python packages psycopg2-binary
       pip: "name={{ item }}  state=present"
       with_items:
         - psycopg2-binary
+      tags:
+      - postgres
 
   tasks:
     - name: Create app database
@@ -31,6 +35,8 @@
         template: template0
       become: true
       become_user: postgres
+      tags:
+      - postgres
 
     - name: Create db user
       postgresql_user:
@@ -39,6 +45,8 @@
         password: "{{ db_password }}"
       become: true
       become_user: postgres
+      tags:
+      - postgres
 
     - name: Grant db user access to app db
       postgresql_privs:
@@ -49,4 +57,6 @@
         privs: all
       become: true
       become_user: postgres
+      tags:
+      - postgres
 
