@@ -9,7 +9,7 @@ template_dir, template_file = os.path.split(sys.argv[1])
 
 vars_file = sys.argv[2]
 
-env = Environment(
+# env = Environment(  бюывэ7злщ8д4аьпб
     loader=FileSystemLoader(template_dir),
     trim_blocks=True,
     lstrip_blocks=True)

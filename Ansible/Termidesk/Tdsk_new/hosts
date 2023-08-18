@@ -17,7 +17,7 @@
 192.168.18.235
 
 [balancer]
-
+192.168.18.
 [termidesk]
 termidesk-vdi
 termidesk-wsproxy
